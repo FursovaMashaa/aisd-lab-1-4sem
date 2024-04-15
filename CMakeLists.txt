@@ -18,7 +18,7 @@ if(MSVC)
 endif()
 
 
-add_library(matrix SHARED "include/list.cpp")
+add_library(matrix SHARED "include/tree.cpp")
 target_include_directories(matrix PUBLIC "include")
 
 # Подключаем googletest
