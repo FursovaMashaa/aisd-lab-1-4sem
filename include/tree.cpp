@@ -1,9 +1,11 @@
 #pragma once
 #include <iostream>
-#include <algorithm> 
+#include <cstdio> 
 #include <stdexcept>
-#include<vector>
+#include <vector>
 #include <random>
+#include <chrono>
+#include <cstdlib>
 using namespace std;
 
 namespace function {
@@ -98,8 +100,6 @@ namespace function {
         MySet(const int* data) {
             root = nullptr;
 
-            int l = 0;
-
             for (size_t i = 0; i < sizeof(data); i++) {
                 insert(data[i]);
             }
@@ -137,18 +137,23 @@ namespace function {
         }
 
         template <typename T>
-        bool contains(Node<T>* node, int key) {
-            if (!node) return false;
-
-            if (node->_value > key)
-
-                return contains(node->_left, key);
-
-            else if (node->_value < key)
-
-                return contains(node->_right, key);
-
-            return true;
+        bool contains(T val) {
+            if (!root) {
+                return false;
+            }
+            Node<T>* cur = root;
+            while (cur) {
+                if (cur->_value == val) {
+                    return true;
+                }
+                else if (cur->_value < val) {
+                    cur = cur->_right;
+                }
+                else if (cur->_value > val) {
+                    cur = cur->_left;
+                }
+            }
+            return false;
         }
 
        
@@ -157,47 +162,157 @@ namespace function {
             deleteNode(root, key);
         }
 
-    };
-    std::vector<int> findDuplicates(const std::vector<int>& vec) {
-        std::vector<int> duplicates;
-        for (size_t i = 0; i < vec.size(); ++i) {
-            bool isDuplicate = false;
-            for (size_t j = 0; j < i; ++j) {
-                if (vec[i] == vec[j]) {
-                    isDuplicate = true;
-                    break;
-                }
+    
+        vector<int> random(int a, int b, size_t n) {
+            vector<int> res;
+            random_device rd;
+            mt19937 gen(rd());
+            uniform_int_distribution<int> distribution(a, b);
+            for (size_t j = 0; j < n; j++) {
+                int x = distribution(gen);
+                res.push_back(x);
             }
-            if (isDuplicate) {
-                bool isAlreadyAdded = false;
-                for (int dup : duplicates) {
-                    if (vec[i] == dup) {
-                        isAlreadyAdded = true;
+            return res;
+        }
+
+
+        void fillTreeWithRandomNumbers(int count) {
+            double time_count_vec = 0;
+            double time_count_tree = 0;
+            for (int j = 0; j < 100; j++) {
+                random_device rd;
+                mt19937 gen(rd());
+                uniform_int_distribution<int> dist(-100000, 100000);
+
+                auto start_vec = chrono::high_resolution_clock::now();
+                vector<int> vec = random(-100000, 100000, count);
+                auto end_vec = chrono::high_resolution_clock::now();
+
+
+                auto start = chrono::high_resolution_clock::now();
+                for (int i = 0; i < count; ++i) {
+                    int randomNum = dist(gen);
+                    insert(randomNum);
+                }
+                auto end = chrono::high_resolution_clock::now();
+                time_count_tree += chrono::duration<double>(end - start).count();
+                time_count_vec += chrono::duration<double>(end_vec - start_vec).count();
+            }
+            cout << "Time spent filling in the tree " << count << " numbers: " << time_count_tree / 100 << " seconds" << endl;
+            cout << "Time spent filling in the vec " << count << " numbers: " << time_count_vec / 100 << " seconds" << endl;
+        }
+
+        void containsTreeWithRandomNumbers(int count_t) {
+            double time_count_vec = 0;
+            double time_count_tree = 0;
+
+            random_device rd;
+            mt19937 gen(rd());
+            uniform_int_distribution<int> dist(-100000, 100000);
+            for (int i = 0; i < count_t; ++i) {
+                int randomNum = dist(gen);
+                insert(randomNum);
+            }
+            auto start_tree = chrono::high_resolution_clock::now();
+            for (int j = 0; j < 1000; j++) {
+                int randomNum = dist(gen);
+                contains(randomNum);
+            }
+            auto end_tree = chrono::high_resolution_clock::now();
+            vector<int> vec = random(-100000, 100000, count_t);
+            for (int i = 0; i < 1000; i++) {
+                auto start_vec = chrono::high_resolution_clock::now();
+                int cnt = count(vec.begin(), vec.end(), random(-10000, 10000, count_t)[0]);
+                auto end_vec = chrono::high_resolution_clock::now();
+                time_count_vec += chrono::duration<double>(end_vec - start_vec).count();
+            }
+            time_count_tree += chrono::duration<double>(end_tree - start_tree).count();
+
+            cout << "Time taken to contains the tree with " << count_t << " numbers: " << time_count_tree / 1000 << " seconds" << endl;
+            cout << "Time taken to contains the vec with " << count_t << " numbers: " << time_count_vec / 1000 << " seconds" << endl;
+        }
+
+        void insertTreeWithRandomNumbers(int count) {
+            double time_count_vec = 0;
+            double time_count_tree = 0;
+
+            random_device rd;
+            mt19937 gen(rd());
+            uniform_int_distribution<int> dist(-100000, 100000);
+            for (int i = 0; i < count; ++i) {
+                int randomNum = dist(gen);
+                insert(randomNum);
+            }
+            for (int j = 0; j < 1000; j++) {
+                auto start_tree = chrono::high_resolution_clock::now();
+                int randomNum = dist(gen);
+                insert(randomNum);
+                auto end_tree = chrono::high_resolution_clock::now();
+                erase(randomNum);
+                time_count_tree += chrono::duration<double>(end_tree - start_tree).count();
+            }
+            for (int i = 0; i < 1000; i++) {
+                vector<int> vec = random(-100000, 100000, count);
+                auto start_vec = chrono::high_resolution_clock::now();
+                int randomNum = dist(gen);
+                vec.push_back(randomNum);
+                auto end_vec = chrono::high_resolution_clock::now();
+                time_count_vec += chrono::duration<double>(end_vec - start_vec).count();
+            }
+            cout << "Time taken to insert the tree with " << count << "  numbers: " << time_count_tree / 1000 << " seconds" << endl;
+            cout << "Time taken to insert the vec with " << count << "  numbers: " << time_count_vec / 1000 << " seconds" << endl;
+        }
+
+        void eraseTreeWithRandomNumbers(int count) {
+            double time_count_vec = 0;
+            double time_count_tree = 0;
+
+            random_device rd;
+            mt19937 gen(rd());
+            uniform_int_distribution<int> dist(-100000, 100000);
+            for (int i = 0; i < count; ++i) {
+                int randomNum = dist(gen);
+                insert(randomNum);
+            }
+            for (int j = 0; j < 1000; j++) {
+                auto start_tree = chrono::high_resolution_clock::now();
+                int randomNum = dist(gen);
+                erase(randomNum);
+                auto end_tree = chrono::high_resolution_clock::now();
+                insert(randomNum);
+                time_count_tree += chrono::duration<double>(end_tree - start_tree).count();
+
+            }
+            for (int i = 0; i < 1000; i++) {
+                vector<int> vec = random(-100000, 100000, count);
+                auto start_vec = chrono::high_resolution_clock::now();
+                int randomNum = dist(gen);
+                for (size_t j = 0; j < count; j++) {
+                    if (vec[j] == randomNum) {
+                        vec.erase(vec.begin() + j);
                         break;
                     }
                 }
-                if (!isAlreadyAdded) {
-                    duplicates.push_back(vec[i]);
-                }
+                auto end_vec = chrono::high_resolution_clock::now();
+                time_count_vec += chrono::duration<double>(end_vec - start_vec).count();
             }
+            cout << "Time taken to erase the tree with " << count << " numbers: " << time_count_tree / 1000 << " seconds" << endl;
+            cout << "Time taken to erase the vec with " << count << " numbers: " << time_count_vec / 1000 << " seconds" << endl;
+        }
+    };
+    template <typename T>
+    vector<int> findDuplicates(const vector<int>& vec) {
+        vector<int> duplicates;
+        MySet<int> temp(vec.data());
+        for (size_t i = 0; i < vec.size(); ++i) {
+            if (temp.contains(vec[i])) {
+                temp.erase(vec[i]);
+            }
+            else if (!(count(duplicates.begin(), duplicates.end(), vec[i])))
+                duplicates.push_back(vec[i]);
         }
         return duplicates;
     }
-    std::vector<int> random(int a, int b, size_t n, size_t i) {
-        std::vector<int> res;
-        std::mt19937 gen(i);
-        std::uniform_int_distribution<> distribution(a, b);
-        for (size_t j = 0; j < n; j++) {
-            size_t x = distribution(gen);
-            res.push_back(x);
-        }
-        return res;
-    }
-
-    int random(int a, int b, size_t i) {
-        std::mt19937 gen(i);
-        std::uniform_int_distribution<> distribution(a, b);
-        return distribution(gen);
-    }
+        
 }
 
