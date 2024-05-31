@@ -121,8 +121,11 @@ namespace function {
             destroyTree(root);
         }
 
-        MySet operator=(MySet other) {
-            swap(root, other.root);
+        MySet& operator=(const MySet& other) {
+            if (this != &other) {
+                MySet temp(other);
+                swap(root, temp.root);
+            }
             return *this;
         }
 
@@ -297,7 +300,7 @@ namespace function {
                 time_count_vec += chrono::duration<double>(end_vec - start_vec).count();
             }
             cout << "Time taken to erase the tree with " << count << " numbers: " << time_count_tree / 1000 << " seconds" << endl;
-            cout << "Time taken to erase the vec with " << count << " numbers: " << time_count_vec / 1000 << " seconds" << endl;
+            cout << "Time taken to erase the vec with " << count << " cnumbers: " << time_count_vec / 1000 << " seconds" << endl;
         }
     };
     template <typename T>

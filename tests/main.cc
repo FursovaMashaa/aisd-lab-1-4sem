@@ -3,7 +3,7 @@
 using namespace function;
 int main()
 {
-	vector<int> a = { 1, 5, 7, 2, 2, 7 };
+	vector<int> a = { 1, 5, 7, 2, 2, 7};
 	vector<int>dubl_a = findDuplicates<int>(a);
 	for (int i = 0; i < size(dubl_a); i++) {
 		cout << dubl_a[i] << endl;
